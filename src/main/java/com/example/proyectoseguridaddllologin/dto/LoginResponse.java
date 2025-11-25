@@ -11,6 +11,7 @@ public class LoginResponse {
 
     private boolean success;
     private String message;
+    private String token;  // JWT token
     private UserInfo user;
 
     @Data
@@ -25,11 +26,11 @@ public class LoginResponse {
         private String role;
     }
 
-    public static LoginResponse success(UserInfo user) {
-        return new LoginResponse(true, "Login successful", user);
+    public static LoginResponse success(String token, UserInfo user) {
+        return new LoginResponse(true, "Login successful", token, user);
     }
 
     public static LoginResponse failure(String message) {
-        return new LoginResponse(false, message, null);
+        return new LoginResponse(false, message, null, null);
     }
 }

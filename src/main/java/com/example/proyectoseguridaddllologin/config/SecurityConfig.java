@@ -1,5 +1,6 @@
 package com.example.proyectoseguridaddllologin.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -7,81 +8,65 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/**").permitAll()
-////                        .requestMatchers("/api/auth/**", "/h2-console/**", "/v3/api-docs/**",
-////                                "/swagger-ui/**", "/swagger-ui.html").permitAll()
-//                        .anyRequest().authenticated())
-//                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
-//
-//        return http.build();
-//    }
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-     @Bean
-     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
-     Exception {
-     http
-     .csrf(csrf -> csrf.disable())
-     .authorizeHttpRequests(auth -> auth
-     // ✅ Rutas públicas - Solo login
-     .requestMatchers("/api/auth/login").permitAll()
-     .requestMatchers("/h2-console/**").permitAll()
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                // ✅ CSRF DESHABILITADO: Justificación para API REST con JWT
+                // - Esta es una API REST stateless (sin sesiones ni cookies de sesión)
+                // - Usamos JWT tokens en headers Authorization (no cookies automáticas)
+                // - JWT debe ser incluido manualmente por el cliente en cada request
+                // - Los tokens JWT no son vulnerables a CSRF porque:
+                // 1. Se almacenan en localStorage/sessionStorage (no en cookies)
+                // 2. No son enviados automáticamente por el navegador
+                // 3. JavaScript de otro dominio no puede acceder al token
+                .csrf(csrf -> csrf.disable())
 
-     // Permitir exponer endpoints de Swagger sin autenticación
-     .requestMatchers("/v3/api-docs/**",
-             "/swagger-ui/**",
-             "/swagger-ui.html").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // ✅ Rutas públicas (sin autenticación)
+                        .requestMatchers("/api/auth/login").permitAll() // Login público
+                        .requestMatchers("/h2-console/**").permitAll() // H2 Console
+                        .requestMatchers("/*.html").permitAll() // Páginas HTML demo
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger
 
-     // ✅ PROTECCIÓN POR ROL - Solo administradores pueden eliminar
-     .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
+                        // ✅ Rutas protegidas por ROL ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/*/power").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/*/power").hasRole("ADMIN")
 
-     // ✅ PROTECCIÓN POR ROL - Solo administradores pueden modificar poder
-     .requestMatchers(HttpMethod.PATCH, "/api/users/*/power").hasRole("ADMIN")
-     .requestMatchers(HttpMethod.PUT, "/api/users/*/power").hasRole("ADMIN")
+                        // ✅ Rutas protegidas (requieren autenticación con JWT)
+                        .requestMatchers(HttpMethod.GET, "/api/users").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
 
-     // ✅ Usuarios autenticados pueden ver la lista
-     .requestMatchers(HttpMethod.GET, "/api/users").authenticated()
-     .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
+                        // ✅ Cualquier otra ruta requiere autenticación
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sin sesiones
+                )
+                .httpBasic(basic -> {
+                }); // Basic Auth solo para login inicial
 
-     // ✅ Cualquier otra ruta requiere autenticación
-     .anyRequest().authenticated())
-     .sessionManagement(session -> session
-     .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-     .httpBasic(basic -> {
-     }); // Habilitamos HTTP Basic Auth temporalmente
+        // ✅ Agregar filtro JWT ANTES del filtro de autenticación estándar
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-     // Permitir frames para H2 Console
-     http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+        // Permitir frames para H2 Console
+        http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
-     return http.build();
-     }
+        return http.build();
+    }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        String encodingId = "bcrypt";
-//        Map<String, PasswordEncoder> encoders = new HashMap<>();
-//        encoders.put(encodingId, new BCryptPasswordEncoder());
-//
-//        return new DelegatingPasswordEncoder(encodingId, encoders);
-//    }
-
-     @Bean
-     public PasswordEncoder passwordEncoder() {
-     return new BCryptPasswordEncoder();
-     }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
