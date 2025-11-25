@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitingFilter rateLimitingFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -56,8 +57,12 @@ public class SecurityConfig {
         // ⚠️ REMOVIDO httpBasic() - Solo JWT permitido para endpoints protegidos
         // El login (/api/auth/login) NO requiere autenticación previa
 
-        // ✅ Agregar filtro JWT ANTES del filtro de autenticación estándar
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        // ✅ Agregar filtro de Rate Limiting ANTES de JWT (primero validar límite, luego
+        // autenticar)
+        http.addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // ✅ Agregar filtro JWT DESPUÉS del filtro de Rate Limiting
+        http.addFilterAfter(jwtAuthenticationFilter, RateLimitingFilter.class);
 
         // Permitir frames para H2 Console
         http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
