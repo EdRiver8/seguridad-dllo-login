@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🛡️ Comparación: Basic Auth vs JWT (CSRF)</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        margin: 0;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .card {
+        background: white;
+        color: #333;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+      }
+      h1 {
+        color: #667eea;
+        margin-top: 0;
+      }
+      h2 {
+        color: #2a5298;
+        margin-top: 20px;
+      }
+      .comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .method-card {
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .vulnerable {
+        border-color: #ff6b6b;
+        background: #ffe0e0;
+      }
+      .protected {
+        border-color: #51cf66;
+        background: #d3f9d8;
+      }
+      button {
+        background: #2a5298;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+      }
+      button:hover {
+        background: #1e3c72;
+      }
+      button.danger {
+        background: #ff6b6b;
+      }
+      button.danger:hover {
+        background: #ff5252;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .console-log {
+        background: #1e1e1e;
+        color: #4ec9b0;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-top: 15px;
+      }
+      .console-log div {
+        margin: 5px 0;
+      }
+      .log-success {
+        color: #4ec9b0;
+      }
+      .log-error {
+        color: #f48771;
+      }
+      .log-warning {
+        color: #dcdcaa;
+      }
+      .log-info {
+        color: #9cdcfe;
+      }
+      .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .badge-danger {
+        background: #ff6b6b;
+        color: white;
+      }
+      .badge-success {
+        background: #51cf66;
+        color: white;
+      }
+      code {
+        background: #f5f5f5;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: "Courier New", monospace;
+        color: #c92a2a;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>🛡️ Demostración: ¿Por qué JWT protege contra CSRF?</h1>
+        <p>
+          Esta página simula un ataque CSRF desde un
+          <strong>sitio malicioso</strong> intentando eliminar usuarios en tu
+          aplicación.
+        </p>
+
+        <div class="comparison">
+          <div class="method-card vulnerable">
+            <span class="badge badge-danger">❌ VULNERABLE</span>
+            <h2>🔓 Basic Auth</h2>
+            <p>
+              <strong>Problema:</strong> Las credenciales se envían
+              automáticamente con cada request.
+            </p>
+            <p>
+              <strong>Ataque:</strong> El navegador incluye el header
+              <code>Authorization</code> aunque la petición venga de otro sitio.
+            </p>
+            <button class="danger" onclick="atacarConBasicAuth()">
+              🔴 ATACAR CON BASIC AUTH
+            </button>
+            <p style="font-size: 12px; margin-top: 10px; color: #666">
+              ⚠️ Este ataque FUNCIONARÁ si has hecho login con Basic Auth
+            </p>
+          </div>
+
+          <div class="method-card protected">
+            <span class="badge badge-success">✅ PROTEGIDO</span>
+            <h2>🔒 JWT Token</h2>
+            <p>
+              <strong>Protección:</strong> El token JWT NO se envía
+              automáticamente.
+            </p>
+            <p>
+              <strong>Bloqueo:</strong> El atacante no tiene acceso al token
+              (está en localStorage de otro dominio).
+            </p>
+            <button onclick="atacarConJWT()">🛡️ INTENTAR ATACAR CON JWT</button>
+            <p style="font-size: 12px; margin-top: 10px; color: #666">
+              ✅ Este ataque FALLARÁ porque no tenemos el token JWT
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📊 Consola de Ataques</h2>
+        <div id="console" class="console-log"></div>
+      </div>
+
+      <div class="card">
+        <h2>🎓 Explicación Técnica</h2>
+        <h3>❌ Por qué Basic Auth es vulnerable a CSRF:</h3>
+        <ul>
+          <li>
+            El navegador <strong>almacena credenciales</strong> en su cache de
+            autenticación
+          </li>
+          <li>
+            Al hacer un request, el navegador
+            <strong>incluye automáticamente</strong> el header
+            <code>Authorization: Basic ...</code>
+          </li>
+          <li>
+            Un sitio malicioso puede hacer requests y el navegador incluirá las
+            credenciales
+          </li>
+        </ul>
+
+        <h3>✅ Por qué JWT NO es vulnerable a CSRF:</h3>
+        <ul>
+          <li>
+            El token JWT se guarda en <code>localStorage</code> o
+            <code>sessionStorage</code>
+          </li>
+          <li>
+            JavaScript de otro dominio <strong>NO puede acceder</strong> a ese
+            storage
+          </li>
+          <li>
+            El token debe ser incluido <strong>manualmente</strong> en cada
+            request
+          </li>
+          <li>
+            Un sitio malicioso <strong>no tiene el token</strong>, así que no
+            puede hacer el request
+          </li>
+        </ul>
+
+        <h3>🔑 Solución implementada:</h3>
+        <ul>
+          <li>✅ JWT para autenticación (stateless, seguro contra CSRF)</li>
+          <li>✅ Tokens con expiración (24 horas)</li>
+          <li>✅ Claims personalizados (rol, userId)</li>
+          <li>✅ Filtro JWT que valida en cada request</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      const consoleDiv = document.getElementById("console");
+
+      function logToConsole(message, type = "info") {
+        const div = document.createElement("div");
+        div.className = "log-" + type;
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        consoleDiv.appendChild(div);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        console.log(message);
+      }
+
+      function atacarConBasicAuth() {
+        logToConsole("🔴 INICIANDO ATAQUE CON BASIC AUTH...", "warning");
+        logToConsole(
+          "🔴 Intentando eliminar usuario con ID 1 (Goku)",
+          "warning"
+        );
+        logToConsole(
+          "⚠️ El navegador enviará las credenciales automáticamente...",
+          "info"
+        );
+
+        fetch("http://localhost:8080/api/users/1", {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            Authorization: "Basic YnVsbWE6cGFzc3dvcmQ=", // bulma:password
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              logToConsole(
+                "💀 ¡ATAQUE EXITOSO! Usuario eliminado con Basic Auth",
+                "success"
+              );
+              logToConsole(
+                "⚠️ ESTO DEMUESTRA LA VULNERABILIDAD DE BASIC AUTH",
+                "error"
+              );
+            } else if (response.status === 401) {
+              logToConsole(
+                "❌ No autenticado (no hay credenciales almacenadas)",
+                "error"
+              );
+              logToConsole(
+                "💡 Haz login primero con Basic Auth para ver el ataque",
+                "info"
+              );
+            } else if (response.status === 403) {
+              logToConsole("❌ Sin permisos (no eres ADMIN)", "error");
+            } else {
+              logToConsole(`❌ Error: ${response.status}`, "error");
+            }
+          })
+          .catch((error) => {
+            logToConsole("⚠️ Error: " + error.message, "error");
+          });
+      }
+
+      function atacarConJWT() {
+        logToConsole("🛡️ INTENTANDO ATAQUE CON JWT...", "warning");
+        logToConsole("🔍 Buscando token JWT en localStorage...", "info");
+
+        // Intentar obtener el token (FALLARÁ porque no existe en este dominio)
+        const token = localStorage.getItem("jwt_token");
+
+        if (!token) {
+          logToConsole("❌ NO SE ENCONTRÓ TOKEN JWT", "error");
+          logToConsole(
+            "✅ ATAQUE BLOQUEADO: El atacante no tiene acceso al token",
+            "success"
+          );
+          logToConsole(
+            "🔐 El token está en localStorage del dominio legítimo",
+            "info"
+          );
+          logToConsole(
+            "🛡️ JavaScript de otro dominio NO puede acceder a él",
+            "info"
+          );
+          return;
+        }
+
+        logToConsole(
+          "🔴 Token encontrado, intentando eliminar usuario...",
+          "warning"
+        );
+
+        fetch("http://localhost:8080/api/users/1", {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              logToConsole(
+                "💀 ¡ATAQUE EXITOSO! (Esto NO debería pasar)",
+                "error"
+              );
+            } else {
+              logToConsole(
+                "✅ ATAQUE BLOQUEADO: " + response.status,
+                "success"
+              );
+            }
+          })
+          .catch((error) => {
+            logToConsole("✅ ATAQUE BLOQUEADO: " + error.message, "success");
+          });
+      }
+
+      // Log inicial
+      logToConsole("🛡️ Página de demostración CSRF cargada", "success");
+      logToConsole(
+        "📝 Esta página simula un sitio MALICIOSO intentando atacar tu app",
+        "info"
+      );
+    </script>
+  </body>
+</html>

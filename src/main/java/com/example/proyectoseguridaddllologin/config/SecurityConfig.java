@@ -52,9 +52,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sin sesiones
-                )
-                .httpBasic(basic -> {
-                }); // Basic Auth solo para login inicial
+                );
+        // ⚠️ REMOVIDO httpBasic() - Solo JWT permitido para endpoints protegidos
+        // El login (/api/auth/login) NO requiere autenticación previa
 
         // ✅ Agregar filtro JWT ANTES del filtro de autenticación estándar
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
