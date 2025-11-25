@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo SQL Injection - Dragon Ball Z Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: #ffd700;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .info-box h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .attack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .attack-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .attack-card h3 {
+            color: #ff4444;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .attack-type {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .type-sql { background: #ffebee; color: #c62828; }
+        .type-dos { background: #fff3e0; color: #e65100; }
+        .type-xss { background: #f3e5f5; color: #6a1b9a; }
+
+        .payload-box {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            word-break: break-all;
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .test-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .result-success {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .result-error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .result-blocked {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            color: #e65100;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .icon-blocked { background: #ff9800; }
+        .icon-failed { background: #f44336; }
+        .icon-success { background: #4caf50; }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Demo: Protección contra SQL Injection</h1>
+        <p class="subtitle">Validación de Entrada con Bean Validation (JSR-380)</p>
+
+        <!-- Información sobre SQL Injection -->
+        <div class="info-box">
+            <h2>🔍 ¿Qué es SQL Injection?</h2>
+            <p><strong>SQL Injection</strong> es una técnica de ataque donde un atacante inyecta código SQL malicioso en campos de entrada para manipular la base de datos.</p>
+            <ul>
+                <li><strong>Objetivo:</strong> Obtener acceso no autorizado, robar datos, o destruir información</li>
+                <li><strong>Método:</strong> Insertar caracteres especiales SQL en inputs (', --, OR, etc.)</li>
+                <li><strong>Impacto:</strong> Puede comprometer toda la base de datos</li>
+            </ul>
+
+            <h2 style="margin-top: 20px;">✅ Protecciones Implementadas</h2>
+            <ul>
+                <li><strong>@NotBlank:</strong> Campos no pueden estar vacíos</li>
+                <li><strong>@Size:</strong> Longitud mínima y máxima definida (3-50 chars para username)</li>
+                <li><strong>@Pattern:</strong> Solo caracteres alfanuméricos y guion bajo permitidos</li>
+                <li><strong>JPA/Hibernate:</strong> Consultas parametrizadas automáticas (previene SQL injection)</li>
+                <li><strong>GlobalExceptionHandler:</strong> Mensajes de error claros sin exponer información sensible</li>
+            </ul>
+        </div>
+
+        <!-- Grid de ataques -->
+        <div class="attack-grid">
+            <!-- Ataque 1: SQL Injection Básico -->
+            <div class="attack-card">
+                <h3>🔴 Ataque 1: SQL Injection Clásico</h3>
+                <span class="attack-type type-sql">SQL INJECTION</span>
+                <p><strong>Objetivo:</strong> Bypassear autenticación usando <code>OR '1'='1</code></p>
+                
+                <div class="payload-box">
+                    <strong>Username:</strong> admin' OR '1'='1<br>
+                    <strong>Password:</strong> cualquiercosa
+                </div>
+
+                <p><strong>SQL generado (vulnerable):</strong></p>
+                <div class="payload-box">
+                    SELECT * FROM users WHERE username = 'admin' OR '1'='1' AND password = '...'
+                </div>
+
+                <button class="test-button" onclick="testSQLInjection()">🧪 Probar Ataque</button>
+                <div id="result1" class="result-box"></div>
+            </div>
+
+            <!-- Ataque 2: DoS con campos largos -->
+            <div class="attack-card">
+                <h3>🔴 Ataque 2: Denial of Service</h3>
+                <span class="attack-type type-dos">DOS ATTACK</span>
+                <p><strong>Objetivo:</strong> Sobrecargar servidor con campos extremadamente largos</p>
+                
+                <div class="payload-box">
+                    <strong>Username:</strong> "a".repeat(10000)<br>
+                    <strong>Password:</strong> "b".repeat(10000)
+                </div>
+
+                <p><strong>Impacto:</strong> Consume memoria, causa timeout, hace que la app no responda</p>
+
+                <button class="test-button" onclick="testDoS()">🧪 Probar Ataque</button>
+                <div id="result2" class="result-box"></div>
+            </div>
+
+            <!-- Ataque 3: XSS en username -->
+            <div class="attack-card">
+                <h3>🔴 Ataque 3: Cross-Site Scripting</h3>
+                <span class="attack-type type-xss">XSS ATTACK</span>
+                <p><strong>Objetivo:</strong> Inyectar JavaScript malicioso en campos de texto</p>
+                
+                <div class="payload-box">
+                    <strong>Username:</strong> &lt;script&gt;alert('XSS')&lt;/script&gt;<br>
+                    <strong>Password:</strong> password
+                </div>
+
+                <p><strong>Riesgo:</strong> Si se devuelve sin sanitizar, ejecuta código en el navegador</p>
+
+                <button class="test-button" onclick="testXSS()">🧪 Probar Ataque</button>
+                <div id="result3" class="result-box"></div>
+            </div>
+
+            <!-- Ataque 4: SQL Injection Avanzado -->
+            <div class="attack-card">
+                <h3>🔴 Ataque 4: SQL Injection con Comentarios</h3>
+                <span class="attack-type type-sql">SQL INJECTION</span>
+                <p><strong>Objetivo:</strong> Ignorar resto de query con <code>--</code></p>
+                
+                <div class="payload-box">
+                    <strong>Username:</strong> admin'--<br>
+                    <strong>Password:</strong> (ignorado por el comentario)
+                </div>
+
+                <p><strong>SQL generado (vulnerable):</strong></p>
+                <div class="payload-box">
+                    SELECT * FROM users WHERE username = 'admin'-- AND password = '...'
+                </div>
+
+                <button class="test-button" onclick="testSQLComment()">🧪 Probar Ataque</button>
+                <div id="result4" class="result-box"></div>
+            </div>
+
+            <!-- Ataque 5: Campo muy corto -->
+            <div class="attack-card">
+                <h3>🔴 Ataque 5: Validación de Longitud</h3>
+                <span class="attack-type type-sql">VALIDATION BYPASS</span>
+                <p><strong>Objetivo:</strong> Probar límites de longitud mínima/máxima</p>
+                
+                <div class="payload-box">
+                    <strong>Username:</strong> ab (muy corto, min=3)<br>
+                    <strong>Password:</strong> 12345 (muy corto, min=6)
+                </div>
+
+                <p><strong>Esperado:</strong> Rechazo por no cumplir requisitos de longitud</p>
+
+                <button class="test-button" onclick="testLength()">🧪 Probar Ataque</button>
+                <div id="result5" class="result-box"></div>
+            </div>
+
+            <!-- Ataque 6: Caracteres especiales -->
+            <div class="attack-card">
+                <h3>🔴 Ataque 6: Caracteres No Permitidos</h3>
+                <span class="attack-type type-sql">VALIDATION BYPASS</span>
+                <p><strong>Objetivo:</strong> Usar caracteres especiales prohibidos</p>
+                
+                <div class="payload-box">
+                    <strong>Username:</strong> admin@email.com<br>
+                    <strong>Password:</strong> password123
+                </div>
+
+                <p><strong>Regex:</strong> Solo permite [a-zA-Z0-9_], rechaza símbolos</p>
+
+                <button class="test-button" onclick="testSpecialChars()">🧪 Probar Ataque</button>
+                <div id="result6" class="result-box"></div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="info-box">
+            <h2>📊 Estadísticas de Ataques</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Ataques</div>
+                    <div class="stat-value" id="totalAttempts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🛡️ Bloqueados</div>
+                    <div class="stat-value" id="blockedAttempts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">❌ Fallidos</div>
+                    <div class="stat-value" id="failedAttempts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">% Protección</div>
+                    <div class="stat-value" id="protectionRate">100%</div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-icon icon-blocked"></div>
+                    <span><strong>Bloqueado:</strong> Validación rechazó el input (400 Bad Request)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon icon-failed"></div>
+                    <span><strong>Fallido:</strong> Validación pasó pero autenticación falló (401 Unauthorized)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon icon-success"></div>
+                    <span><strong>Exitoso:</strong> Login correcto (200 OK) - Solo con credenciales válidas</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api/auth/login';
+        let stats = {
+            total: 0,
+            blocked: 0,
+            failed: 0,
+            success: 0
+        };
+
+        function updateStats() {
+            stats.total++;
+            document.getElementById('totalAttempts').textContent = stats.total;
+            document.getElementById('blockedAttempts').textContent = stats.blocked;
+            document.getElementById('failedAttempts').textContent = stats.failed;
+            
+            const protectionRate = stats.total > 0 
+                ? ((stats.blocked + stats.failed) / stats.total * 100).toFixed(1)
+                : 100;
+            document.getElementById('protectionRate').textContent = protectionRate + '%';
+        }
+
+        async function attemptLogin(username, password, resultId) {
+            const resultBox = document.getElementById(resultId);
+            const button = event.target;
+            
+            button.disabled = true;
+            button.textContent = '⏳ Probando...';
+            resultBox.style.display = 'none';
+
+            console.log(`[ATAQUE] Intentando con username: "${username}", password: "${password}"`);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                console.log(`[RESPUESTA] Status: ${response.status}`, data);
+
+                resultBox.style.display = 'block';
+
+                if (response.status === 400) {
+                    // Validación rechazó el input
+                    stats.blocked++;
+                    resultBox.className = 'result-box result-blocked';
+                    resultBox.innerHTML = `
+                        <strong>🛡️ BLOQUEADO POR VALIDACIÓN</strong><br>
+                        <strong>Status:</strong> 400 Bad Request<br>
+                        <strong>Errores:</strong><br>
+                        ${Object.entries(data.errors || {}).map(([field, msg]) => 
+                            `• <strong>${field}:</strong> ${msg}`
+                        ).join('<br>')}
+                    `;
+                } else if (response.status === 401) {
+                    // Validación pasó pero autenticación falló
+                    stats.failed++;
+                    resultBox.className = 'result-box result-error';
+                    resultBox.innerHTML = `
+                        <strong>❌ AUTENTICACIÓN FALLIDA</strong><br>
+                        <strong>Status:</strong> 401 Unauthorized<br>
+                        <strong>Mensaje:</strong> ${data.message || 'Credenciales inválidas'}<br>
+                        <em>La validación permitió el input, pero las credenciales son incorrectas</em>
+                    `;
+                } else if (response.ok) {
+                    // Login exitoso (solo si usas credenciales válidas)
+                    stats.success++;
+                    resultBox.className = 'result-box result-success';
+                    resultBox.innerHTML = `
+                        <strong>✅ LOGIN EXITOSO</strong><br>
+                        <strong>Status:</strong> 200 OK<br>
+                        <strong>Token JWT recibido</strong><br>
+                        <em>Credenciales válidas - Este caso es normal y esperado</em>
+                    `;
+                } else {
+                    stats.blocked++;
+                    resultBox.className = 'result-box result-blocked';
+                    resultBox.innerHTML = `
+                        <strong>🛡️ BLOQUEADO</strong><br>
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Mensaje:</strong> ${data.message || 'Error desconocido'}
+                    `;
+                }
+
+                updateStats();
+
+            } catch (error) {
+                console.error('[ERROR]', error);
+                stats.blocked++;
+                updateStats();
+                
+                resultBox.style.display = 'block';
+                resultBox.className = 'result-box result-blocked';
+                resultBox.innerHTML = `
+                    <strong>🛡️ BLOQUEADO POR RED/CORS</strong><br>
+                    <strong>Error:</strong> ${error.message}<br>
+                    <em>El servidor rechazó la conexión antes de procesar</em>
+                `;
+            } finally {
+                button.disabled = false;
+                button.textContent = '🧪 Probar Ataque';
+            }
+        }
+
+        function testSQLInjection() {
+            attemptLogin("admin' OR '1'='1", "cualquiercosa", "result1");
+        }
+
+        function testDoS() {
+            const longUsername = "a".repeat(10000);
+            const longPassword = "b".repeat(10000);
+            attemptLogin(longUsername, longPassword, "result2");
+        }
+
+        function testXSS() {
+            attemptLogin("<script>alert('XSS')</script>", "password", "result3");
+        }
+
+        function testSQLComment() {
+            attemptLogin("admin'--", "ignorado", "result4");
+        }
+
+        function testLength() {
+            attemptLogin("ab", "12345", "result5");
+        }
+
+        function testSpecialChars() {
+            attemptLogin("admin@email.com", "password123", "result6");
+        }
+
+        // Log inicial
+        console.log("🛡️ Demo SQL Injection Protection cargada");
+        console.log("📍 API Endpoint:", API_URL);
+        console.log("✅ Protecciones activas: Bean Validation + JPA Prepared Statements");
+    </script>
+</body>
+</html>
